@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Christmas Crossword</title>
+  <title>Christmas Word Search</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
@@ -17,12 +17,12 @@
   <main id="titleScreen" class="screen title">
     <div class="card">
       <h1>Christmas Crossword</h1>
-      <p class="sub">Hard crossword: fill every word perfectly to unlock the passcode.</p>
+      <p class="sub">Word Search Edition: Find every word in the grid. Words can be diagonal, backwards, up, and down.</p>
 
       <div class="rules">
-        <div class="rule"><span>⌨️</span><b>Type letters</b> into the grid.</div>
-        <div class="rule"><span>↔️</span><b>Click a clue</b> to jump to its word.</div>
-        <div class="rule"><span>✅</span><b>Submit</b> checks the entire puzzle.</div>
+        <div class="rule"><span>🧩</span><b>Drag</b> across letters to select a word.</div>
+        <div class="rule"><span>↔️</span><b>Any direction</b> (including backwards + diagonals).</div>
+        <div class="rule"><span>✅</span><b>Find all words</b> to unlock the passcode.</div>
       </div>
 
       <button id="playBtn" class="btn primary">Play Game</button>
@@ -33,40 +33,31 @@
   <main id="gameScreen" class="screen game">
     <header class="hud">
       <div class="pill">
-        <span class="label">Mode</span><span class="value">HARD</span>
+        <span class="label">Found</span><span id="foundCount" class="value">0/0</span>
       </div>
       <div class="pill">
-        <span class="label">Selected</span><span id="selectedClue" class="value">—</span>
+        <span class="label">Selection</span><span id="selectionText" class="value">—</span>
       </div>
+
       <div class="hudBtns">
-        <button id="toggleDirBtn" class="btn ghost small">Direction: Across</button>
-        <button id="clearWordBtn" class="btn ghost small">Clear Word</button>
-        <button id="submitBtn" class="btn primary small">Submit</button>
+        <button id="newPuzzleBtn" class="btn ghost small">New Puzzle</button>
         <button id="restartBtn" class="btn ghost small">Restart</button>
       </div>
     </header>
 
     <section class="layout">
       <div class="gridCard">
-        <div id="grid" class="grid" aria-label="Crossword grid"></div>
-        <div class="tinyHint">
-          Tip: Click a square, type letters. Backspace deletes. Arrow keys move.
-        </div>
-        <div id="status" class="status">Fill the puzzle, then press Submit.</div>
+        <div id="grid" class="grid" aria-label="Word search grid"></div>
+        <div class="tinyHint">Tip: On phone, press a letter then drag across the grid. Release to submit.</div>
+        <div id="status" class="status">Find the listed words.</div>
       </div>
 
-      <div class="cluesCard">
-        <h2>Clues</h2>
-
-        <div class="clueGroup">
-          <h3>Across</h3>
-          <ol id="acrossClues" class="clueList"></ol>
+      <div class="wordsCard">
+        <div class="wordsHeader">
+          <h2>Words to Find</h2>
+          <div class="mini">Words may be backwards/diagonal.</div>
         </div>
-
-        <div class="clueGroup">
-          <h3>Down</h3>
-          <ol id="downClues" class="clueList"></ol>
-        </div>
+        <div id="wordsList" class="wordsList"></div>
       </div>
     </section>
   </main>
@@ -74,8 +65,8 @@
   <!-- WIN MODAL -->
   <div id="winModal" class="modal" aria-hidden="true">
     <div class="modalCard">
-      <h2>Puzzle Complete</h2>
-      <p>You solved the crossword.</p>
+      <h2>All Words Found</h2>
+      <p>You completed the word search.</p>
 
       <div class="codeBox">
         <div class="codeLabel">PASSCODE</div>
@@ -84,24 +75,11 @@
 
       <div class="modalButtons">
         <button id="copyBtn" class="btn primary">Copy Code</button>
-        <button id="playAgainBtn" class="btn ghost">Play Again</button>
+        <button id="playAgainBtn" class="btn ghost">New Puzzle</button>
         <button id="backToTitleBtn" class="btn ghost">Back to Title</button>
       </div>
 
       <div id="copyStatus" class="copyStatus"></div>
-    </div>
-  </div>
-
-  <!-- FAIL MODAL -->
-  <div id="failModal" class="modal" aria-hidden="true">
-    <div class="modalCard">
-      <h2>Not Quite</h2>
-      <p id="failReason">Some letters are incorrect or missing.</p>
-
-      <div class="modalButtons">
-        <button id="keepTryingBtn" class="btn primary">Keep Trying</button>
-        <button id="backToTitleBtn2" class="btn ghost">Back to Title</button>
-      </div>
     </div>
   </div>
 
