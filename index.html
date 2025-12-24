@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Christmas Crossword</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- INTRO -->
+  <main id="introScreen" class="screen intro active">
+    <button id="startChallengeBtn" class="btn primary big">Start Challenge</button>
+  </main>
+
+  <!-- TITLE -->
+  <main id="titleScreen" class="screen title">
+    <div class="card">
+      <h1>Christmas Crossword</h1>
+      <p class="sub">Hard crossword: fill every word perfectly to unlock the passcode.</p>
+
+      <div class="rules">
+        <div class="rule"><span>⌨️</span><b>Type letters</b> into the grid.</div>
+        <div class="rule"><span>↔️</span><b>Click a clue</b> to jump to its word.</div>
+        <div class="rule"><span>✅</span><b>Submit</b> checks the entire puzzle.</div>
+      </div>
+
+      <button id="playBtn" class="btn primary">Play Game</button>
+    </div>
+  </main>
+
+  <!-- GAME -->
+  <main id="gameScreen" class="screen game">
+    <header class="hud">
+      <div class="pill">
+        <span class="label">Mode</span><span class="value">HARD</span>
+      </div>
+      <div class="pill">
+        <span class="label">Selected</span><span id="selectedClue" class="value">—</span>
+      </div>
+      <div class="hudBtns">
+        <button id="toggleDirBtn" class="btn ghost small">Direction: Across</button>
+        <button id="clearWordBtn" class="btn ghost small">Clear Word</button>
+        <button id="submitBtn" class="btn primary small">Submit</button>
+        <button id="restartBtn" class="btn ghost small">Restart</button>
+      </div>
+    </header>
+
+    <section class="layout">
+      <div class="gridCard">
+        <div id="grid" class="grid" aria-label="Crossword grid"></div>
+        <div class="tinyHint">
+          Tip: Click a square, type letters. Backspace deletes. Arrow keys move.
+        </div>
+        <div id="status" class="status">Fill the puzzle, then press Submit.</div>
+      </div>
+
+      <div class="cluesCard">
+        <h2>Clues</h2>
+
+        <div class="clueGroup">
+          <h3>Across</h3>
+          <ol id="acrossClues" class="clueList"></ol>
+        </div>
+
+        <div class="clueGroup">
+          <h3>Down</h3>
+          <ol id="downClues" class="clueList"></ol>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- WIN MODAL -->
+  <div id="winModal" class="modal" aria-hidden="true">
+    <div class="modalCard">
+      <h2>Puzzle Complete</h2>
+      <p>You solved the crossword.</p>
+
+      <div class="codeBox">
+        <div class="codeLabel">PASSCODE</div>
+        <div class="codeText">BETHLEHEMATDAWN</div>
+      </div>
+
+      <div class="modalButtons">
+        <button id="copyBtn" class="btn primary">Copy Code</button>
+        <button id="playAgainBtn" class="btn ghost">Play Again</button>
+        <button id="backToTitleBtn" class="btn ghost">Back to Title</button>
+      </div>
+
+      <div id="copyStatus" class="copyStatus"></div>
+    </div>
+  </div>
+
+  <!-- FAIL MODAL -->
+  <div id="failModal" class="modal" aria-hidden="true">
+    <div class="modalCard">
+      <h2>Not Quite</h2>
+      <p id="failReason">Some letters are incorrect or missing.</p>
+
+      <div class="modalButtons">
+        <button id="keepTryingBtn" class="btn primary">Keep Trying</button>
+        <button id="backToTitleBtn2" class="btn ghost">Back to Title</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
