@@ -2,84 +2,89 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>Christmas Word Search</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
 
   <!-- INTRO -->
-  <main id="introScreen" class="screen intro active">
-    <button id="startChallengeBtn" class="btn primary big">Start Challenge</button>
-  </main>
+  <section id="screenIntro" class="screen intro active">
+    <button id="btnStartChallenge" class="btn btnPrimary btnBig">Start Challenge</button>
+  </section>
 
   <!-- TITLE -->
-  <main id="titleScreen" class="screen title">
-    <div class="card">
+  <section id="screenTitle" class="screen title">
+    <div class="panel">
       <h1>Christmas Crossword</h1>
-      <p class="sub">Word Search Edition: Find every word in the grid. Words can go up, down, diagonal, and backwards.</p>
+      <p class="subtitle">
+        Word Search Edition. Drag across letters to find the listed words. Words can go up, down,
+        diagonal, and backwards.
+      </p>
 
-      <div class="rules">
-        <div class="rule"><span>🧩</span><b>Drag</b> across letters to select a word.</div>
-        <div class="rule"><span>↔️</span><b>Any direction</b> (including backwards + diagonals).</div>
-        <div class="rule"><span>✅</span><b>Find all words</b> to unlock the passcode.</div>
+      <div class="bullets">
+        <div class="bullet"><span>🟡</span><b>Drag</b> across the grid to select.</div>
+        <div class="bullet"><span>✳️</span><b>8 directions</b> (including backwards).</div>
+        <div class="bullet"><span>🏁</span><b>Find all</b> words to unlock the passcode.</div>
       </div>
 
-      <button id="playBtn" class="btn primary">Play Game</button>
+      <button id="btnPlay" class="btn btnPrimary">Play Game</button>
     </div>
-  </main>
+  </section>
 
   <!-- GAME -->
-  <main id="gameScreen" class="screen game">
-    <header class="hud">
-      <div class="pill">
-        <span class="label">Found</span><span id="foundCount" class="value">0/0</span>
-      </div>
-      <div class="pill">
-        <span class="label">Selection</span><span id="selectionText" class="value">—</span>
+  <section id="screenGame" class="screen game">
+    <header class="topbar">
+      <div class="chip">
+        <div class="chipLabel">Found</div>
+        <div id="foundCount" class="chipValue">0/0</div>
       </div>
 
-      <div class="hudBtns">
-        <button id="newPuzzleBtn" class="btn ghost small">New Puzzle</button>
-        <button id="restartBtn" class="btn ghost small">Restart</button>
+      <div class="chip grow">
+        <div class="chipLabel">Selection</div>
+        <div id="selectionText" class="chipValue mono">—</div>
+      </div>
+
+      <div class="actions">
+        <button id="btnNew" class="btn btnGhost">New Puzzle</button>
+        <button id="btnReset" class="btn btnGhost">Reset</button>
       </div>
     </header>
 
-    <section class="layout">
-      <div class="gridCard">
-        <div id="grid" class="grid" aria-label="Word search grid"></div>
-        <div class="tinyHint">Tip: Press a letter then drag across the grid. Release to submit.</div>
-        <div id="status" class="status">Find the listed words.</div>
+    <main class="content">
+      <div class="boardCard">
+        <canvas id="board" width="600" height="600" aria-label="Word search board"></canvas>
+        <div id="status" class="status">Drag to select a word.</div>
       </div>
 
-      <div class="wordsCard">
-        <div class="wordsHeader">
-          <h2>Words to Find</h2>
-          <div class="mini">Words may be backwards/diagonal.</div>
+      <aside class="wordsCard">
+        <div class="wordsHead">
+          <h2>Words</h2>
+          <div class="note">Straight lines only (8 directions).</div>
         </div>
-        <div id="wordsList" class="wordsList"></div>
-      </div>
-    </section>
-  </main>
+        <div id="wordsList" class="words"></div>
+      </aside>
+    </main>
+  </section>
 
   <!-- WIN MODAL -->
-  <div id="winModal" class="modal" aria-hidden="true">
-    <div class="modalCard">
+  <div id="modalWin" class="modal" aria-hidden="true">
+    <div class="modalBox">
       <h2>All Words Found</h2>
-      <p>You completed the word search.</p>
+      <p>You completed the puzzle.</p>
 
       <div class="codeBox">
         <div class="codeLabel">PASSCODE</div>
-        <div class="codeText">BETHLEHEMATDAWN</div>
+        <div class="codeValue">BETHLEHEMATDAWN</div>
       </div>
 
-      <div class="modalButtons">
-        <button id="copyBtn" class="btn primary">Copy Code</button>
-        <button id="playAgainBtn" class="btn ghost">New Puzzle</button>
-        <button id="backToTitleBtn" class="btn ghost">Back to Title</button>
+      <div class="modalBtns">
+        <button id="btnCopy" class="btn btnPrimary">Copy Code</button>
+        <button id="btnPlayAgain" class="btn btnGhost">New Puzzle</button>
+        <button id="btnBackTitle" class="btn btnGhost">Back to Title</button>
       </div>
 
-      <div id="copyStatus" class="copyStatus"></div>
+      <div id="copyMsg" class="copyMsg"></div>
     </div>
   </div>
 
