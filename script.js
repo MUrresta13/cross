@@ -2,8 +2,9 @@
 
 const PASSCODE = "BETHLEHEMATDAWN";
 
-// Hard-ish: bigger grid + longer word list
+// Bigger grid + longer list = harder
 const GRID_SIZE = 18;
+
 const WORDS = [
   "BETHLEHEM",
   "INCARNATION",
@@ -37,6 +38,7 @@ const DIRS = [
   { dr: -1, dc: -1 },  // up-left
 ];
 
+// -------------------- DOM --------------------
 const introScreen = document.getElementById("introScreen");
 const titleScreen = document.getElementById("titleScreen");
 const gameScreen  = document.getElementById("gameScreen");
@@ -60,6 +62,7 @@ const playAgainBtn = document.getElementById("playAgainBtn");
 const backToTitleBtn = document.getElementById("backToTitleBtn");
 const copyStatus = document.getElementById("copyStatus");
 
+// -------------------- STATE --------------------
 let grid = [];
 let placements = new Map();   // word -> array of [r,c]
 let found = new Set();
@@ -70,13 +73,16 @@ let startCell = null;         // {r,c}
 let currentPath = [];         // array of {r,c}
 let cellDivs = [];            // 2D div refs
 
+// pointer tracking (iOS reliable)
+let activePointerId = null;
+
+// -------------------- UI helpers --------------------
 function show(el){ el.classList.add("show"); el.setAttribute("aria-hidden","false"); }
 function hide(el){ el.classList.remove("show"); el.setAttribute("aria-hidden","true"); }
 function hideAllModals(){
   hide(winModal);
   copyStatus.textContent = "";
 }
-
 function showScreen(screen){
   hideAllModals();
   introScreen.classList.remove("active");
@@ -84,7 +90,6 @@ function showScreen(screen){
   gameScreen.classList.remove("active");
   screen.classList.add("active");
 }
-
 function setStatus(msg, kind=""){
   statusEl.textContent = msg;
   statusEl.style.color =
@@ -93,10 +98,10 @@ function setStatus(msg, kind=""){
     "rgba(255,255,255,.85)";
 }
 
+// -------------------- Grid generation --------------------
 function inBounds(r,c){
   return r >= 0 && r < GRID_SIZE && c >= 0 && c < GRID_SIZE;
 }
-
 function randInt(n){ return Math.floor(Math.random()*n); }
 
 function makeEmptyGrid(){
@@ -115,7 +120,7 @@ function canPlaceWord(word, r, c, dir){
 }
 
 function placeWord(word){
-  const attempts = 600;
+  const attempts = 900;
   for(let a=0;a<attempts;a++){
     const dir = DIRS[randInt(DIRS.length)];
     const r = randInt(GRID_SIZE);
@@ -148,13 +153,11 @@ function fillRandomLetters(){
 function buildPuzzle(){
   found.clear();
   placements = new Map();
-  makeEmptyGrid();
 
-  // Place longer words first (harder & more stable)
+  // Place longer words first
   const sorted = [...WORDS].sort((a,b)=>b.length-a.length);
 
-  // Try multiple full builds until all words placed
-  for(let tries=0;tries<40;tries++){
+  for(let tries=0;tries<60;tries++){
     placements.clear();
     makeEmptyGrid();
 
@@ -170,6 +173,7 @@ function buildPuzzle(){
   return false;
 }
 
+// -------------------- Rendering --------------------
 function renderWords(){
   wordsListEl.innerHTML = "";
   for(const w of WORDS){
@@ -202,25 +206,13 @@ function renderGrid(){
       d.textContent = grid[r][c];
       d.dataset.r = String(r);
       d.dataset.c = String(c);
-
-      // Pointer events for drag selection (works on mobile + desktop)
-      d.addEventListener("pointerdown", (ev) => {
-        ev.preventDefault();
-        beginDrag(r,c);
-      });
-      d.addEventListener("pointerenter", () => {
-        if(isDragging) extendDrag(r,c);
-      });
-
       cellDivs[r][c] = d;
       gridEl.appendChild(d);
     }
   }
-
-  // End drag anywhere
-  window.addEventListener("pointerup", endDrag, { once: true });
 }
 
+// -------------------- Selection helpers --------------------
 function clearSelectionHighlights(){
   for(let r=0;r<GRID_SIZE;r++){
     for(let c=0;c<GRID_SIZE;c++){
@@ -236,29 +228,18 @@ function markFoundWordCells(coords){
 }
 
 function coordsToString(coords){
-  return coords.map(({r,c}) => grid[r][c]).join("");
-}
-
-function beginDrag(r,c){
-  hideAllModals();
-  isDragging = true;
-  startCell = { r, c };
-  currentPath = [{ r, c }];
-  clearSelectionHighlights();
-  cellDivs[r][c].classList.add("selected");
-  selectionTextEl.textContent = grid[r][c];
-  setStatus("Selecting…", "");
+  let s = "";
+  for(const {r,c} of coords) s += grid[r][c];
+  return s;
 }
 
 function linePath(a, b){
-  // If user drags non-linear, snap to a straight valid direction from start to current
   const dr = b.r - a.r;
   const dc = b.c - a.c;
 
   const sdr = dr === 0 ? 0 : (dr > 0 ? 1 : -1);
   const sdc = dc === 0 ? 0 : (dc > 0 ? 1 : -1);
 
-  // must be straight or diagonal (|dr| == |dc|)
   const isStraight = (dr === 0 && dc !== 0) || (dc === 0 && dr !== 0);
   const isDiag = Math.abs(dr) === Math.abs(dc);
 
@@ -275,8 +256,22 @@ function linePath(a, b){
   return coords;
 }
 
+function beginDrag(r,c){
+  hideAllModals();
+  isDragging = true;
+  startCell = { r, c };
+  currentPath = [{ r, c }];
+
+  clearSelectionHighlights();
+  cellDivs[r][c].classList.add("selected");
+
+  selectionTextEl.textContent = grid[r][c];
+  setStatus("Selecting…", "");
+}
+
 function extendDrag(r,c){
   if(!isDragging || !startCell) return;
+
   const path = linePath(startCell, { r, c });
   if(!path) return;
 
@@ -287,18 +282,25 @@ function extendDrag(r,c){
     cellDivs[p.r][p.c].classList.add("selected");
   }
 
-  const txt = coordsToString(currentPath);
-  selectionTextEl.textContent = txt;
+  selectionTextEl.textContent = coordsToString(currentPath);
 }
 
 function endDrag(){
   if(!isDragging) return;
   isDragging = false;
 
+  if(!currentPath || currentPath.length < 2){
+    clearSelectionHighlights();
+    selectionTextEl.textContent = "—";
+    setStatus("Select at least 2 letters.", "bad");
+    startCell = null;
+    currentPath = [];
+    return;
+  }
+
   const chosen = coordsToString(currentPath);
   const reversed = chosen.split("").reverse().join("");
 
-  // match against remaining words
   const remaining = WORDS.filter(w => !found.has(w));
   const match = remaining.find(w => w === chosen || w === reversed);
 
@@ -314,8 +316,7 @@ function endDrag(){
 
   found.add(match);
 
-  // highlight the actual placed coordinates (not just the drag selection),
-  // so even if they found it backwards, it still marks consistently.
+  // mark placed coords so backwards selection still highlights correctly
   const coords = placements.get(match);
   if(coords) markFoundWordCells(coords);
 
@@ -331,6 +332,61 @@ function endDrag(){
   }
 }
 
+// -------------------- Pointer handling (iOS reliable) --------------------
+function getCellFromPoint(x, y){
+  const el = document.elementFromPoint(x, y);
+  if(!el) return null;
+
+  const cell = el.classList?.contains("cell") ? el : el.closest?.(".cell");
+  if(!cell) return null;
+
+  const r = Number(cell.dataset.r);
+  const c = Number(cell.dataset.c);
+  if(Number.isNaN(r) || Number.isNaN(c)) return null;
+
+  return { r, c };
+}
+
+// Attach once
+gridEl.addEventListener("pointerdown", (ev) => {
+  ev.preventDefault();
+
+  const cell = getCellFromPoint(ev.clientX, ev.clientY);
+  if(!cell) return;
+
+  activePointerId = ev.pointerId;
+  try{ gridEl.setPointerCapture(activePointerId); }catch{}
+
+  beginDrag(cell.r, cell.c);
+});
+
+gridEl.addEventListener("pointermove", (ev) => {
+  if(activePointerId === null || ev.pointerId !== activePointerId) return;
+
+  const cell = getCellFromPoint(ev.clientX, ev.clientY);
+  if(!cell) return;
+
+  extendDrag(cell.r, cell.c);
+});
+
+gridEl.addEventListener("pointerup", (ev) => {
+  if(activePointerId === null || ev.pointerId !== activePointerId) return;
+
+  try{ gridEl.releasePointerCapture(activePointerId); }catch{}
+  activePointerId = null;
+
+  endDrag();
+});
+
+gridEl.addEventListener("pointercancel", () => {
+  activePointerId = null;
+  isDragging = false;
+  clearSelectionHighlights();
+  selectionTextEl.textContent = "—";
+  setStatus("Selection cancelled. Try again.", "bad");
+});
+
+// -------------------- Clipboard --------------------
 async function copyToClipboard(text){
   if(navigator.clipboard && navigator.clipboard.writeText){
     await navigator.clipboard.writeText(text);
@@ -348,16 +404,9 @@ async function copyToClipboard(text){
   return ok;
 }
 
-function startGame(newPuzzle=false){
+// -------------------- Game lifecycle --------------------
+function startGame(){
   hideAllModals();
-  if(newPuzzle){
-    // remove found visuals
-    for(let r=0;r<GRID_SIZE;r++){
-      for(let c=0;c<GRID_SIZE;c++){
-        if(cellDivs[r]?.[c]) cellDivs[r][c].classList.remove("found","selected");
-      }
-    }
-  }
 
   const ok = buildPuzzle();
   if(!ok){
@@ -367,8 +416,6 @@ function startGame(newPuzzle=false){
 
   renderWords();
   renderGrid();
-
-  // reapply found word highlights (fresh puzzle = none)
   found.clear();
   updateFoundUI();
 
@@ -376,15 +423,16 @@ function startGame(newPuzzle=false){
   selectionTextEl.textContent = "—";
 }
 
+// -------------------- Buttons --------------------
 startChallengeBtn.addEventListener("click", () => showScreen(titleScreen));
 
 playBtn.addEventListener("click", () => {
   showScreen(gameScreen);
-  startGame(true);
+  startGame();
 });
 
-restartBtn.addEventListener("click", () => startGame(false));
-newPuzzleBtn.addEventListener("click", () => startGame(true));
+restartBtn.addEventListener("click", () => startGame());
+newPuzzleBtn.addEventListener("click", () => startGame());
 
 copyBtn.addEventListener("click", async () => {
   try{
@@ -397,7 +445,7 @@ copyBtn.addEventListener("click", async () => {
 
 playAgainBtn.addEventListener("click", () => {
   hideAllModals();
-  startGame(true);
+  startGame();
 });
 
 backToTitleBtn.addEventListener("click", () => {
